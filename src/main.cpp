@@ -104,12 +104,10 @@ int main()
     	  gt_values(2) = vx_gt;
     	  gt_values(3) = vy_gt;
     	  ground_truth.push_back(gt_values);
-          //cout << "before process measurement pass" << endl;
-		  //cout << meas_package.sensor_type_ << endl;
-		  //cout << "sensor_type" << endl;
+    
           //Call ProcessMeasurment(meas_package) for Kalman filter
     	  fusionEKF.ProcessMeasurement(meas_package);    	  
-			//cout << "process measurement pass" << endl;
+			
     	  //Push the current estimated x,y positon from the Kalman filter's state vector
 
     	  VectorXd estimate(4);
@@ -127,7 +125,7 @@ int main()
     	  estimations.push_back(estimate);
 
     	  VectorXd RMSE = tools.CalculateRMSE(estimations, ground_truth);
-			//cout << "calc rmse pass" << endl;
+		
           json msgJson;
           msgJson["estimate_x"] = p_x;
           msgJson["estimate_y"] = p_y;
@@ -138,7 +136,7 @@ int main()
           auto msg = "42[\"estimate_marker\"," + msgJson.dump() + "]";
           // std::cout << msg << std::endl;
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
-			//cout << "sdgsdfg" << endl;
+			
         }
       } else {
         
@@ -146,7 +144,7 @@ int main()
         ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
       }
     }
-	//cout << "s1241234" << endl;
+	
   });
 	
   // We don't need this since we're not using HTTP but if it's removed the program

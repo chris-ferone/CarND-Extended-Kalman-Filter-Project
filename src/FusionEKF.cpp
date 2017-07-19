@@ -2,6 +2,7 @@
 #include "tools.h"
 #include "Eigen/Dense"
 #include <iostream>
+#include <algorithm>
 
 using namespace std;
 using Eigen::MatrixXd;
@@ -15,14 +16,13 @@ FusionEKF::FusionEKF() {
   is_initialized_ = false;
 
   previous_timestamp_ = 0;
+  
 
   // initializing matrices
   R_laser_ = MatrixXd(2, 2);
   R_radar_ = MatrixXd(3, 3);
   H_laser_ = MatrixXd(2, 4);
-  Hj_ = MatrixXd(3, 4);
-  //Q_ = MatrixXd(2, 2);
-  
+  Hj_ = MatrixXd(3, 4);  
 
   //measurement covariance matrix - laser
   R_laser_ << 0.0225, 0,
@@ -39,13 +39,7 @@ FusionEKF::FusionEKF() {
     * Set the process and measurement noises
   */
   
-  //process covariance matrix
-  /**
-  Q_ << 0, 0, 0, 0,
-        0, 0, 0, 0,
-		0, 0, 0, 0,
-        0, 0, 0, 0;
-	*/	
+
 	//measurement matrix
   H_laser_ << 1, 0, 0, 0,
 		0, 1, 0, 0;
@@ -82,10 +76,10 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     ekf_.x_ << 1, 1, 1, 1;
 	
 	ekf_.P_ = MatrixXd(4, 4);
-	ekf_.P_ << 10000, 0, 0, 0,
-				0, 10000, 0, 0,
-				0, 0, 10000, 0,
-				0, 0, 0, 10000;
+	ekf_.P_ <<  1000, 0, 0, 0,
+				0, 1000, 0, 0,
+				0, 0, 1000, 0,
+				0, 0, 0, 1000;
 
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       /**
@@ -125,14 +119,25 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
      * Use noise_ax = 9 and noise_ay = 9 for your Q matrix.
    */
 	//compute the time elapsed between the current and previous measurements
-	float dt = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;	//dt - expressed in seconds
+	float dt = 0.0;
+	if (previous_timestamp_ == 0)
+	{
+		dt = 0.05;
+	}
+	else
+	{
+		dt =  (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;	//dt - expressed in seconds
+	}
 	previous_timestamp_ = measurement_pack.timestamp_;
+	
+	//cout << dt << endl;
 	
 	ekf_.F_ = MatrixXd(4, 4);
 	ekf_.F_ << 1, 0, dt, 0,
 				0, 1, 0, dt,
 				0, 0, 1, 0,
 				0, 0, 0, 1;
+				
 
 	//2. Set the process covariance matrix Q
 	ekf_.Q_ = MatrixXd(4, 4);
@@ -144,7 +149,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 			  0, pow(dt,3)/2*noise_ay, 0, pow(dt,2)*noise_ay ;
 				
   ekf_.Predict();
-  //cout << "c" << endl;
+
   /*****************************************************************************
    *  Update
    ****************************************************************************/

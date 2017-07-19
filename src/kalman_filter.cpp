@@ -59,16 +59,16 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
 	
 	VectorXd hx(3);
 	hx << sqrt(pow(x_(0), 2) + pow(x_(1),2)), atan2(x_(1),x_(0)), (x_(0)*x_(2)+x_(1)*x_(3))/sqrt(pow(x_(0), 2) + pow(x_(1),2));
-	cout << "phi_ = " << hx(1) << endl; 
+	
   	VectorXd y = z -  hx;
 	if (y(1) >= PI)
 	{
-	cout << "OOR+" <<endl; 
+	//cout << "OOR+" <<endl; 
 	y(1) = 2*PI - y(1);
-	}	//y(1) + 2*PI;
+	}	
 	if (y(1) <= -1*PI)
 	{
-	cout << "OOR-" <<endl;
+	//cout << "OOR-" <<endl;
 	y(1) = y(1) + 2*PI;
 	}
 	MatrixXd Hjt = Hj.transpose();
