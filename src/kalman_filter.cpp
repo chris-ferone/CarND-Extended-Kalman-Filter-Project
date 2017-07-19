@@ -1,6 +1,7 @@
 #include "kalman_filter.h"
 #include "tools.h"
 #include <iostream>
+#define PI 3.14159265
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -34,23 +35,12 @@ void KalmanFilter::Update(const VectorXd &z) {
   TODO:
     * update the state by using Kalman Filter equations
   */
-	//cout << "1" << endl;
-	//cout << "H_: " << endl;
-	//cout << H_ << endl;
-	//cout << "x: "<< endl;
-	//cout << x_ << endl;
+
 	VectorXd y = z - H_ * x_;
-	//cout << "2" << endl;
 	MatrixXd Ht = H_.transpose();
-	//cout << "3" << endl;
-	//cout << "p: "<< endl;
-	//cout << P_ << endl;
 	MatrixXd S = H_ * P_ * Ht + R_;
-	//cout << "4" << endl;
 	MatrixXd Si = S.inverse();
-	//cout << "5" << endl;
 	MatrixXd K =  P_ * Ht * Si;
-	//cout << "6" << endl;
 	x_ = x_ + (K * y);
 	MatrixXd I;
 	I = MatrixXd::Identity(4, 4);
@@ -63,27 +53,27 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   TODO:
     * update the state by using Extended Kalman Filter equations
   */
-	//cout << "z" << endl;
 	Tools tools;
 	
 	MatrixXd Hj = tools.CalculateJacobian(x_);
-	//cout << "y" << endl;
+	
 	VectorXd hx(3);
 	hx << sqrt(pow(x_(0), 2) + pow(x_(1),2)), atan2(x_(1),x_(0)), (x_(0)*x_(2)+x_(1)*x_(3))/sqrt(pow(x_(0), 2) + pow(x_(1),2));
-	//cout << "x" << endl;
-	//cout << "z: " << endl;
-	//cout << z << endl;
-	//cout << "hx: "<< endl;
-	//cout << hx << endl;
-	
+	cout << "phi_ = " << hx(1) << endl; 
   	VectorXd y = z -  hx;
-	//cout << "w" << endl;
+	if (y(1) >= PI)
+	{
+	cout << "OOR+" <<endl; 
+	y(1) = 2*PI - y(1);
+	}	//y(1) + 2*PI;
+	if (y(1) <= -1*PI)
+	{
+	cout << "OOR-" <<endl;
+	y(1) = y(1) + 2*PI;
+	}
 	MatrixXd Hjt = Hj.transpose();
-	//cout << "v" << endl;
 	MatrixXd S = Hj * P_ * Hjt + R_;
-	//cout << "u" << endl;
 	MatrixXd Si = S.inverse();
-	//cout << "t" << endl;
 	MatrixXd K =  P_ * Hjt * Si;
 	
 	x_ = x_ + (K * y);
